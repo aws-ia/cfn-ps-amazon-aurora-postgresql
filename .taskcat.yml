@@ -1,5 +1,5 @@
 project:
-  name: quickstart-amazon-aurora-postgresql
+  name: cfn-ps-amazon-aurora-postgresql
   shorten_stack_name: true
   owner: quickstart-eng@amazon.com
   package_lambda: false
