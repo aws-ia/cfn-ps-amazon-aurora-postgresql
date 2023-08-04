@@ -742,6 +742,7 @@ Resources:
         - DoCreateDatabase
         - !Ref DBName
         - !Ref AWS::NoValue
+      DBClusterIdentifier: !Sub apg-${AWS::StackName}
       DBClusterParameterGroupName: !Ref APGDBCPG
       DBSubnetGroupName: !Ref AuroraDBSubnetGroup
       EnableCloudwatchLogsExports:
@@ -800,6 +801,7 @@ Resources:
             - ERDSDBInstancePubliclyAccessible: "PubliclyAccessible is false by default"
     Properties:
       AutoMinorVersionUpgrade: !Ref DBAutoMinorVersionUpgrade
+      DBClusterIdentifier: !Ref AuroraDBCluster
       DBInstanceClass: !Ref DBInstanceClass
       DBParameterGroupName: !Ref APGDBPG
       EnablePerformanceInsights: !Ref EnablePerformanceInsights
@@ -844,6 +846,7 @@ Resources:
             - ERDSDBInstancePubliclyAccessible: "PubliclyAccessible is false by default"
     Properties:
       AutoMinorVersionUpgrade: !Ref DBAutoMinorVersionUpgrade
+      DBClusterIdentifier: !Ref AuroraDBCluster
       DBInstanceClass: !Ref DBInstanceClass
       DBParameterGroupName: !Ref APGDBPG
       EnablePerformanceInsights: !Ref EnablePerformanceInsights
