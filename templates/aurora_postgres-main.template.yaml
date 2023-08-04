@@ -30,6 +30,7 @@ Metadata:
     - Label:
         default: Database General configuration
       Parameters:
+        - DBClusterIdentifier
         - DBEngineVersion
         - DBInstanceClass
         - MinACUs
@@ -45,12 +46,12 @@ Metadata:
         - EnableIAMDBAuth
     - Label:
         default: Database Storage configuration
-      Parameters:  
+      Parameters:
         - DBAllocatedStorageEncrypted
         - StorageType
     - Label:
         default: Database Monitoring configuration
-      Parameters:  
+      Parameters:
         - DBExportLogToCloudwatch
         - EnablePerformanceInsights
         - PerformanceInsightsRetentionPeriod
@@ -111,7 +112,7 @@ Metadata:
       QSS3KeyPrefix:
         default: Quick Start S3 key prefix
 
-      #Aurora related parameter labels  
+      #Aurora related parameter labels
       Application:
         default: Application name
       ApplicationVersion:
@@ -126,6 +127,8 @@ Metadata:
         default: Database auto minor version upgrade
       DBBackupRetentionPeriod:
         default: Database backup retention period
+      DBClusterIdentifier:
+        default: Database cluster identifier
       DBEngineVersion:
         default: Database Engine Version
       DBExportLogToCloudwatch:
@@ -171,7 +174,7 @@ Metadata:
 
 ###############################################################################
 # Parameters
-###############################################################################      
+###############################################################################
 Parameters:
 
   #VPC stack related parameters
@@ -212,7 +215,7 @@ Parameters:
     Description: CIDR block for the VPC.
     Type: String
 
-  #Bastion host related parameters  
+  #Bastion host related parameters
   EnableBastion:
     AllowedValues:
       - "true"
@@ -237,7 +240,7 @@ Parameters:
     Description: "Allowed CIDR block for external SSH access."
     Default: 10.0.0.0/16
     Type: String
-  
+
   #Quickstart related parameters
   QSS3BucketName:
     AllowedPattern: "^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$"
@@ -255,7 +258,7 @@ Parameters:
     Default: cfn-ps-amazon-aurora-postgresql/
     Description: "S3 key prefix for the Quick Start assets. Quick Start key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/)."
     Type: String
-  
+
   #Aurora related parameters
   Application:
     Type: String
@@ -305,6 +308,12 @@ Parameters:
     Type: Number
     MinValue: 0
     MaxValue: 35
+  DBClusterIdentifier:
+    Default: apg-cluster1
+    Description: "Database cluster identifier"
+    MaxLength: 63
+    MinLength: 1
+    Type: String
   DBEngineVersion:
     Description: >- 
       Select Database Engine Version. 
@@ -537,7 +546,7 @@ Parameters:
 
 ###############################################################################
 # Conditions
-############################################################################### 
+###############################################################################
 Conditions:
   EnableBastionAccess: !Equals
     - !Ref EnableBastion
@@ -548,7 +557,7 @@ Conditions:
 # Resources
 ###############################################################################
 Resources:
-  
+
   VPCStack:
     Type: 'AWS::CloudFormation::Stack'
     Properties:
@@ -573,7 +582,7 @@ Resources:
         PublicSubnet1CIDR: !Ref PublicSubnet1CIDR
         PublicSubnet2CIDR: !Ref PublicSubnet2CIDR
         VPCCIDR: !Ref VPCCIDR
-  
+
   BastionStack:
     Condition: EnableBastionAccess
     Type: 'AWS::CloudFormation::Stack'
@@ -624,6 +633,7 @@ Resources:
           - Outputs.PrivateSubnet2AID
         DBAccessCIDR: !Ref VPCCIDR
         #Database General configuration
+        DBClusterIdentifier: !Ref DBClusterIdentifier
         DBEngineVersion: !Ref DBEngineVersion
         DBInstanceClass: !Ref DBInstanceClass
         MinACUs: !Ref MinACUs

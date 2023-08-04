@@ -28,6 +28,7 @@ Metadata:
     - Label:
         default: Database General configuration
       Parameters:
+        - DBClusterIdentifier
         - DBEngineVersion
         - DBInstanceClass
         - MinACUs
@@ -43,12 +44,12 @@ Metadata:
         - EnableIAMDBAuth
     - Label:
         default: Database Storage configuration
-      Parameters:  
+      Parameters:
         - DBAllocatedStorageEncrypted
         - StorageType
     - Label:
         default: Database Monitoring configuration
-      Parameters:  
+      Parameters:
         - DBExportLogToCloudwatch
         - EnablePerformanceInsights
         - PerformanceInsightsRetentionPeriod
@@ -65,7 +66,7 @@ Metadata:
         - ProjectCostCenter
         - Confidentiality
         - Compliance
-  
+
 ###############################################################################
 # Parameter labels
 ###############################################################################
@@ -88,6 +89,8 @@ Metadata:
         default: Database auto minor version upgrade
       DBBackupRetentionPeriod:
         default: Database backup retention period
+      DBClusterIdentifier:
+        default: Database cluster identifier
       DBEngineVersion:
         default: Database Engine Version
       DBExportLogToCloudwatch:
@@ -355,6 +358,12 @@ Parameters:
     Type: Number
     MinValue: 0
     MaxValue: 35
+  DBClusterIdentifier:
+    Default: apg-cluster1
+    Description: "Database cluster identifier"
+    MaxLength: 63
+    MinLength: 1
+    Type: String
   DBEngineVersion:
     Description: >- 
       Select Database Engine Version. 
@@ -390,7 +399,7 @@ Parameters:
       - 14.5
       - 14.6
       - 14.7
-      - 15.2  
+      - 15.2
   DBExportLogToCloudwatch:
     Default: "true"
     AllowedValues:
@@ -447,7 +456,7 @@ Parameters:
       - db.x2g.4xlarge
       - db.x2g.8xlarge
       - db.x2g.large
-      - db.x2g.xlarge     
+      - db.x2g.xlarge
   DBMasterUsername:
     AllowedPattern: "[a-zA-Z][a-zA-Z0-9]*"
     ConstraintDescription: "Must begin with a letter and contain only alphanumeric characters."
@@ -606,7 +615,7 @@ Parameters:
 # Resources
 ###############################################################################
 Resources:
-  
+
   AuroraDBSubnetGroup:
     Properties:
       DBSubnetGroupDescription: "Subnets available for the Amazon Aurora database cluster"
@@ -652,7 +661,7 @@ Resources:
       Subscription:
       - Endpoint: !Ref NotificationList
         Protocol: email
- 
+
   EncryptionKey:
     Metadata:
       cfn-lint:
@@ -679,14 +688,14 @@ Resources:
       Tags:
         - Key: Name
           Value: !Ref AWS::StackName
-  
+
   EncryptionKeyAlias:
     Condition: UseDatabaseEncryption
     Type: AWS::KMS::Alias
     Properties:
       AliasName: !Sub "alias/${AWS::StackName}"
       TargetKeyId: !Ref EncryptionKey
-  
+
   MRole:
     Type: AWS::IAM::Role
     Condition: EnableEM
@@ -742,7 +751,7 @@ Resources:
         - DoCreateDatabase
         - !Ref DBName
         - !Ref AWS::NoValue
-      DBClusterIdentifier: !Sub apg-${AWS::StackName}
+      DBClusterIdentifier: !Ref DBClusterIdentifier
       DBClusterParameterGroupName: !Ref APGDBCPG
       DBSubnetGroupName: !Ref AuroraDBSubnetGroup
       EnableCloudwatchLogsExports:
@@ -789,7 +798,7 @@ Resources:
           - CreateSecurityGroup
           - [!Ref RDSSecurityGroup]
           - [!Ref CustomDBSecurityGroup]
-    
+
   Inst1:
     Type: "AWS::RDS::DBInstance"
     Metadata:
@@ -833,7 +842,7 @@ Resources:
         -
           Key: Compliance
           Value: !Ref Compliance
-  
+
   Inst2:
     Type: "AWS::RDS::DBInstance"
     Condition: IsDBMultiAZ
@@ -878,7 +887,7 @@ Resources:
         -
           Key: Compliance
           Value: !Ref Compliance
-    
+
   CPUUtilizationAlarm1:
     Type: "AWS::CloudWatch::Alarm"
     Properties:
@@ -899,7 +908,7 @@ Resources:
       Period: 60
       EvaluationPeriods: 5
       TreatMissingData: 'notBreaching'
- 
+
   CPUUtilizationAlarm2:
     Condition: IsDBMultiAZ
     Type: "AWS::CloudWatch::Alarm"
@@ -921,7 +930,7 @@ Resources:
       Period: 60
       EvaluationPeriods: 5
       TreatMissingData: 'notBreaching'
-  
+
   MaxUsedTxIDsAlarm1:
     Type: "AWS::CloudWatch::Alarm"
     Properties:
@@ -942,7 +951,7 @@ Resources:
       Period: 60
       EvaluationPeriods: 5
       TreatMissingData: 'notBreaching'
-  
+
   MaxUsedTxIDsAlarm2:
     Condition: IsDBMultiAZ
     Type: "AWS::CloudWatch::Alarm"
@@ -964,7 +973,7 @@ Resources:
       Period: 60
       EvaluationPeriods: 5
       TreatMissingData: 'notBreaching'
-  
+
   FreeLocalStorageAlarm1:
     Type: "AWS::CloudWatch::Alarm"
     Properties:
@@ -985,7 +994,7 @@ Resources:
       Period: 60
       EvaluationPeriods: 5
       TreatMissingData: 'notBreaching'
-  
+
   FreeLocalStorageAlarm2:
     Condition: IsDBMultiAZ
     Type: "AWS::CloudWatch::Alarm"
@@ -1007,7 +1016,7 @@ Resources:
       Period: 60
       EvaluationPeriods: 5
       TreatMissingData: 'notBreaching'
-    
+
   DatabaseClusterEventSubscription:
     Condition: EventSubscription
     Type: 'AWS::RDS::EventSubscription'
@@ -1023,7 +1032,7 @@ Resources:
       SnsTopicArn: !Ref DBSNSTopic
       SourceIds: [!Ref AuroraDBCluster]
       SourceType: 'db-cluster'
-  
+
   DatabaseInstanceEventSubscription:
     Condition: EventSubscription
     Type: 'AWS::RDS::EventSubscription'
@@ -1044,7 +1053,7 @@ Resources:
       - !Ref Inst1
       - !If [IsDBMultiAZ, !Ref Inst2, !Ref "AWS::NoValue"]
       SourceType: 'db-instance'
-  
+
   DBParameterGroupEventSubscription:
     Condition: EventSubscription
     Type: 'AWS::RDS::EventSubscription'
