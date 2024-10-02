@@ -1,4 +1,8 @@
 # quickstart-amazon-aurora-postgresql
+## Deprecation Notice
+
+:x: This repository is subject to deprecation in Q4 2024. For more details, [please review this announcement](https://github.com/aws-ia/.announcements/issues/1). 
+
 ## Modular Architecture for Amazon Aurora PostgreSQL
 
 This Quick Start automatically deploys a modular, highly available environment for Amazon Aurora PostgreSQL on the Amazon Web Services (AWS) Cloud.
